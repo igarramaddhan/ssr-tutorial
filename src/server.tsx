@@ -4,6 +4,7 @@ import * as cors from 'cors';
 import {renderToString} from 'react-dom/server';
 import App from './App';
 import * as serialize from 'serialize-javascript';
+import {StaticRouter} from 'react-router-dom';
 
 const app = express();
 
@@ -12,8 +13,12 @@ app.use(cors());
 app.use(express.static('dist'));
 
 app.get('*', (req, res, next) => {
-  const name = "Rama";
-  const markup = renderToString(<App name={name} />);
+  const name = 'Rama';
+  const markup = renderToString(
+    <StaticRouter location={req.url} context={{}}>
+      <App name={name} />
+    </StaticRouter>
+  );
 
   const html = `
   <!DOCTYPE html>
