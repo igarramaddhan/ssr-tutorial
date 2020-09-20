@@ -5,6 +5,7 @@ import {renderToString} from 'react-dom/server';
 import App from './App';
 import * as serialize from 'serialize-javascript';
 import {StaticRouter} from 'react-router-dom';
+import { ServerStyleSheet, StyleSheetManager } from 'styled-components';
 
 const app = express();
 
@@ -14,16 +15,22 @@ app.use(express.static('dist'));
 
 app.get('*', (req, res, next) => {
   const name = 'Rama';
+  const sheet = new ServerStyleSheet();
   const markup = renderToString(
-    <StaticRouter location={req.url} context={{}}>
-      <App name={name} />
-    </StaticRouter>
+    <StyleSheetManager sheet={sheet.instance}>
+      <StaticRouter location={req.url} context={{}}>
+        <App name={name} />
+      </StaticRouter>
+    </StyleSheetManager>
   );
+
+  const styleTags = sheet.getStyleTags();
 
   const html = `
   <!DOCTYPE html>
   <html>
     <head>
+      ${styleTags}
       <title>React SSR</title>
       <meta
         name="viewport"
@@ -40,6 +47,7 @@ app.get('*', (req, res, next) => {
   `;
 
   res.send(html);
+  sheet.seal();
 });
 
 app.listen(3000, () => console.log('Server is running on port 3000'));
